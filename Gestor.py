@@ -6,7 +6,7 @@ class Ventana:
 
 		self.root = Tk()
 		self.root.title("GESTOR") 
-		self.root.geometry("900x500+300+300")
+		self.root.geometry("900x400+300+300")
 		self.root.resizable(0,0)
 		self.style = ttk.Style()
 		self.style.theme_use('winnative')
@@ -14,28 +14,24 @@ class Ventana:
 		self.afiliados = []
 		self.obras_sociales=["IOMA","OSPE"]
 
-		self.btn_abrir_ventana= Button(self.root,text="ACEPTAR",command= self.abrir_ventana)
-		self.btn_abrir_ventana.place(x=10,y=400)
 
-		self.afiliados,self.items = self.crear_lista_afiliados()
-
-		self.crear_tabla()
-
-		print(self.afiliados)
+		self.crear_lista_afiliados() ##### MODIFICAR LUGAR
+		self.crear_tabla(10)   ##### MODIFICAR LUGAR
 
 
+		self.frame1= Frame(self.root,bg="lightgrey",width=806,height=170,relief="groove",bd=3)
+		self.frame1.place(x=46,y=240)
+		self.frame1.configure(width=810,height=145)
 
 
-	def ordenar_alfabeticamente(self):
-		pass
-
-
+		self.btn_abrir_ventana= Button(self.frame1,text="ACEPTAR",command= self.abrir_ventana)
+		self.btn_abrir_ventana.place(x=10,y=46)
 
 	def crear_tabla(self,filas=10):
 		self.tabla = ttk.Treeview(self.root, height=filas,columns=("APELLIDO","NOMBRE","DNI//AFILIADO","TELEFONO","OBRA SOCIAL"))
 		self.tabla.pack(expand=False)
 		
-		self.style.configure('Treeview.Heading', background="#3ca6e3")
+		self.style.configure('Treeview.Heading', background="#90ccef")
 		self.style.configure("Treeview")
 
 		## --- barra scroll
@@ -50,6 +46,7 @@ class Ventana:
 		self.tabla.column("DNI//AFILIADO", anchor=CENTER, width=150)
 		self.tabla.column("TELEFONO", anchor=CENTER, width=150)
 		self.tabla.column("OBRA SOCIAL", anchor=CENTER, width=100)
+
 		## --- indicar cabecera
 		self.tabla.heading("#0", text="", anchor=CENTER)
 		self.tabla.heading("#1", text="APELLIDO", anchor=W)
@@ -58,16 +55,9 @@ class Ventana:
 		self.tabla.heading("#4", text="TELEFONO", anchor=CENTER)
 		self.tabla.heading("#5", text="OBRA SOCIAL", anchor=CENTER)
 
-		for afiliado in self.afiliados:
+		for afiliado in self.afiliados_sort:
 			self.tabla.insert("", END, text="", 
-									  values=(
-									  		afiliado[self.items[0]],
-										    afiliado[self.items[1]], 
-										    afiliado[self.items[2]], 
-										    afiliado[self.items[3]],
-										    afiliado[self.items[4]],
-										     ))
-
+								  	values=(afiliado[0],afiliado[1], afiliado[2], afiliado[3],afiliado[4]))
 
 	def abrir_ventana(self):
 
@@ -124,22 +114,19 @@ class Ventana:
 		self.afiliados.append(self.get_apellido().upper())
 		print(self.afiliados)
 		
-
-
-	def crear_lista_afiliados(self,archivo="afiliados.txt",obra_social="TODO"): 
-		lista=[]
+	def crear_lista_afiliados(self,archivo="afiliados.txt",obra_social=""): 
 		try:
 			with open(archivo, 'r', encoding='latin1') as datos:
 				items = datos.readline().upper().rstrip().split(',')
 				for linea in datos:
 					linea = linea.upper().rstrip().split(',')
-					if obra_social != 'TODO':
+					if obra_social != '':
 						if linea[-1] != obra_social: continue # filtra si no pertenece a obra social pasada por parametro
-						lista.append(dict(zip(items,linea)))
+						self.afiliados.append(linea)
 					else:
-						lista.append(dict(zip(items,linea)))
-				return lista,items
-
+						self.afiliados.append(linea)
+				self.afiliados_sort= sorted(self.afiliados)	# lista ordenada por orden alfabetico	
+				self.items = items
 		except Exception as e:
 			print(f"Error!! {e}")
 
