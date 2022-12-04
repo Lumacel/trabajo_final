@@ -1,16 +1,15 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
+import csv
 
 class App:
-
 	OBRAS_SOCIALES = ["IOMA", "OSPE"]
 	VISTA_OBRASOCIAL = ["TODAS", "IOMA", "OSPE"]
 
 	def __init__(self):
 		self.afiliados = []
 		self.new_afiliado=[]
-		self.new_afiliado_str = ""
 		self.afil_target = []
 		self.current_obrasocial="TODAS"
 
@@ -41,10 +40,10 @@ class App:
 		self.separador= ttk.Separator(self.frame1, orient="vertical")
 		self.separador.place(relx=0.66, rely=0, relwidth=0.005, relheight=1)
 
-		self.btn_agregar= Button(self.frame1,text="AGREGAR", width=29, bd=3, command= self.agregar_afiliado)
+		self.btn_agregar= Button(self.frame1,text="AGREGAR", width=29, bd=3, command= self.modo_agregar_afiliado)
 		self.btn_agregar.place(x=26,y=10) 
 
-		self.btn_editar= Button(self.frame1,text="EDITAR", width=29, bd=3, command= self.editar_afiliado)
+		self.btn_editar= Button(self.frame1,text="EDITAR", width=29, bd=3, command= self.modo_editar_afiliado)
 		self.btn_editar.place(x=26,y=45)
 
 		self.btn_eliminar= Button(self.frame1,text="ELIMINAR", width=29, bd=3, command= self.eliminar_afiliado)
@@ -145,18 +144,18 @@ class App:
 		
 		self.entry_apellido.focus()
 
-		self.top_level.grab_set() # --- inhabilita ventana padre
+		self.top_level.grab_set() # --- inhabilita ventana principal
 
-	def crear_lista_afiliados(self,archivo="afiliados.txt"): # --- levanta datos de archivo .txt (crea lista de lista de datos)		
+	def crear_lista_afiliados(self,archivo="afiliados.csv"): # --- levanta datos de archivo .csv (crea lista de lista de datos)		
 		try:
 			with open(archivo, 'r', encoding='latin1') as datos:
-				items = datos.readline().upper().rstrip().split(',')
-				for linea in datos:
-					linea = linea.upper().rstrip().split(',')					
+				csvreader = csv.reader(datos)
+				items = next(csvreader) 
+				for linea in csvreader:			
 					self.afiliados.append(linea)	
 				self.items = items
 		except Exception as e:
-			self.text_info.set(f"Error!! {e}")
+			messagebox.showerror(message=e, title="ERROR!!!")
 
 	def cargar_tabla(self,lista_afiliados,obrasocial="TODAS"): # --- agrega datos a la tabla (treeview)
 		for afiliado in lista_afiliados: 
@@ -166,38 +165,26 @@ class App:
 			else:
 				self.tabla.insert("", END, text="", values=(afiliado[0],afiliado[1], afiliado[2], afiliado[3],afiliado[4]))
 		self.info_num_afiliados()
- 
-	def get_datos_treeview(self): # --- devuelve valores de la fila seleccionada en la tabla (treeview)
-		focus_item = self.tabla.focus()
-		return self.tabla.item(focus_item)["values"] 
-
-
-
-
-
-
-	def agregar_afiliado(self):
+  
+	def modo_agregar_afiliado(self):  
 		self.modo="agregar"
-		print(self.modo) ######################  ELIMINAR  ###########################
-
 		self.abrir_ventana()
-
-
-	def editar_afiliado(self): #--- permite editar valores de la fila seleccionada
+		
+	def modo_editar_afiliado(self): #--- permite editar valores de la fila seleccion
 		self.modo="editar"  
-		print(self.modo) ######################  ELIMINAR  ###########################
-
-		self.afil_target = self.get_datos_treeview() 
-
+		self.afil_target = self.get_datos_tabla() 
 		if self.afil_target == "":
 			messagebox.showinfo(message="POR FAVOR SELECCIONE ALGUNA FILA", title="EDITAR") # --- caja de mensaje
 		else:
-
 			self.abrir_ventana()
 			self.completar_campos_toplevel()
 
 	def eliminar_afiliado(self):
-		print("eliminar")	
+		pass
+
+
+		
+
 
 
 	def check_new_afiliado(self):
@@ -214,37 +201,31 @@ class App:
 		self.telefono.set(self.afil_target[3])
 		self.obrasocial.set(self.afil_target[4])
 
+	def grabar_afiliado(self):
+		if  messagebox.askyesno(message="¿DESEA CONTINUAR?", title=f"{(self.modo).upper()} AFILIADO"): 
+			self.new_afiliado = self.get_new_afiliado()
+			self.check_new_afiliado()
+			if self.modo=="agregar":
+				self.agregar_afiliado()
+			else: # modo "editar"
+				self.agregar_afiliado()
+				self.eliminar_afiliado()
+			self.limpiar_tabla()
 
-	def grabar_afiliado(self,archivo="afiliados.txt"):
-		self.check_new_afiliado()
-		self.new_afiliado_str = ','.join(self.get_new_afiliado())
-
+	def agregar_afiliado(self,archivo="afiliados.csv"):
 		try:
-			with open(archivo, 'r', encoding='latin1') as datos: 
-				arch = datos.read().upper()
-				nuevo_arch = arch.rstrip() + '\n' + self.new_afiliado_str
-                
-			with open(archivo, 'w') as datos:
-				datos.write(nuevo_arch)
+			with open(archivo, 'a', newline='') as csvfile:  
+				writer_object = csv.writer(csvfile)
+				writer_object.writerow(self.new_afiliado)
 		except Exception as e:
-			self.text_info.set(f"Error!! {e}")
+			messagebox.showerror(message=e, title="ERROR!!!")
+		self.salir_top_level()
 
+
+	def limpiar_tabla(self):
 		self.tabla.delete(*self.tabla.get_children()) # --- elimina todos los elementos de la tabla
-		self.afiliados=[]
-		self.inicializar_tabla() 
-		
-		
-	def get_new_afiliado(self):
-		self.new_afiliado = [
-							self.apellido.get().upper(),
-							self.nombre.get().upper(),
-							self.dni_afiliado.get().upper(),
-							self.telefono.get().upper(),
-							self.obrasocial.get().upper()
-							]
-
-		return self.new_afiliado
-
+		self.afiliados=[] 
+		self.inicializar_tabla()
 
 	def actualizar_tabla(self):
 		self.tabla.delete(*self.tabla.get_children()) # --- elimina todos los elementos de la tabla
@@ -253,8 +234,6 @@ class App:
 		
 	def ordenar_lista_afiliados(self):
 		self.afiliados_sort= sorted(self.afiliados)
-		print(self.afiliados_sort) ########################## eliminar #############################
-
 
 	def salir_top_level(self):
 		self.top_level.destroy()
@@ -272,6 +251,20 @@ class App:
 
 	def get_numero_afiliados(self):
 		return len(self.tabla.get_children())
+
+	def get_datos_tabla(self): # --- devuelve valores de la fila seleccionada en la tabla (treeview)
+		focus_item = self.tabla.focus()
+		return self.tabla.item(focus_item)["values"]
+
+	def get_new_afiliado(self):
+		self.new_afiliado = [
+							self.apellido.get().upper(),
+							self.nombre.get().upper(),
+							self.dni_afiliado.get().upper(),
+							self.telefono.get().upper(),
+							self.obrasocial.get().upper()
+							]
+		return self.new_afiliado
 
 	def info_num_afiliados(self):
 		self.text_info_frame1.set(f"NÚMERO DE AFILIADOS \t - {self.get_numero_afiliados()} -")
