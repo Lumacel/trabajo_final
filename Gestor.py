@@ -10,7 +10,7 @@ class App:
 	def __init__(self):
 		self.afiliados = []
 		self.new_afiliado=[]
-		self.afil_target = []
+		self.afiliado_target = []
 		self.current_obrasocial="TODAS"
 
 		self.root = Tk()  
@@ -46,7 +46,7 @@ class App:
 		self.btn_editar= Button(self.frame1,text="EDITAR", width=29, bd=3, command= self.modo_editar_afiliado)
 		self.btn_editar.place(x=26,y=45)
 
-		self.btn_eliminar= Button(self.frame1,text="ELIMINAR", width=29, bd=3, command= self.eliminar_afiliado)
+		self.btn_eliminar= Button(self.frame1,text="ELIMINAR", width=29, bd=3, command= self.modo_eliminar_afiliado)
 		self.btn_eliminar.place(x=26,y=80)
 
 		self.lbl_obra_social= Label(self.frame1,text="OBRA SOCIAL", relief= "ridge",width=14)
@@ -103,7 +103,7 @@ class App:
 		self.new_afiliado=[]
 		self.top_level = Toplevel()
 		self.top_level.resizable(0,0)
-		self.top_level.title("DATOS AFILIADO")
+		self.top_level.title("DATOS DEL AFILIADO")
 		self.top_level.geometry("370x250")
 
 		self.apellido = StringVar()
@@ -152,6 +152,7 @@ class App:
 				csvreader = csv.reader(datos)
 				items = next(csvreader) 
 				for linea in csvreader:			
+					if linea == []:continue
 					self.afiliados.append(linea)	
 				self.items = items
 		except Exception as e:
@@ -167,26 +168,27 @@ class App:
 		self.info_num_afiliados()
   
 	def modo_agregar_afiliado(self):  
-		self.modo="agregar"
+		self.modo="AGREGAR"
 		self.abrir_ventana()
 		
 	def modo_editar_afiliado(self): #--- permite editar valores de la fila seleccion
-		self.modo="editar"  
-		self.afil_target = self.get_datos_tabla() 
-		if self.afil_target == "":
-			messagebox.showinfo(message="POR FAVOR SELECCIONE ALGUNA FILA", title="EDITAR") # --- caja de mensaje
+		self.modo="EDITAR"  
+		self.afiliado_target = self.get_datos_tabla() 
+		if self.afiliado_target == "":
+			messagebox.showinfo(message="POR FAVOR SELECCIONE ALGUN AFILIADO", title="EDITAR") # --- caja de mensaje
 		else:
 			self.abrir_ventana()
 			self.completar_campos_toplevel()
 
-	def eliminar_afiliado(self):
-		pass
-
-
-		
-
-
-
+	def modo_eliminar_afiliado(self):
+		self.modo="ELIMINAR"
+		self.afiliado_target = self.get_datos_tabla() 
+		if self.afiliado_target == "":
+			messagebox.showinfo(message="POR FAVOR SELECCIONE ALGUN AFILIADO", title="ELIMINAR") # --- caja de mensaje
+		else:
+			if  messagebox.askyesno(message="¿DESEA CONTINUAR?", title=f"{(self.modo)} AFILIADO"): 
+				self.eliminar_afiliado()
+				
 	def check_new_afiliado(self):
 		pass
 
@@ -194,12 +196,9 @@ class App:
 
 
 
-	def completar_campos_toplevel(self): # --- asigna valores a las variables de los campos (con valores de la fila seleccionada)
-		self.apellido.set(self.afil_target[0]) 
-		self.nombre.set(self.afil_target[1])
-		self.dni_afiliado.set(self.afil_target[2])
-		self.telefono.set(self.afil_target[3])
-		self.obrasocial.set(self.afil_target[4])
+
+
+	
 
 	def grabar_afiliado(self):
 		if  messagebox.askyesno(message="¿DESEA CONTINUAR?", title=f"{(self.modo).upper()} AFILIADO"): 
@@ -221,6 +220,35 @@ class App:
 			messagebox.showerror(message=e, title="ERROR!!!")
 		self.salir_top_level()
 
+	def eliminar_afiliado(self,archivo="afiliados.csv"):
+		try:
+			with open(archivo, 'r', encoding='latin1') as datos:
+				nueva_lista_afiliados=[]
+				csvreader = csv.reader(datos)
+				for linea in csvreader:
+					if linea == []: continue
+					nueva_lista_afiliados.append(linea)	
+		except Exception as e:
+			messagebox.showerror(message=e, title="ERROR!!!")
+
+		try:	
+			with open(archivo, 'w', encoding='latin1') as datos:
+			
+				csvwriter = csv.writer(datos)
+				for linea in nueva_lista_afiliados:
+					if linea == self.afiliado_target: continue
+					csvwriter.writerow(linea)
+		except Exception as e:
+			messagebox.showerror(message=e, title="ERROR!!!")
+
+		self.limpiar_tabla()
+
+	def completar_campos_toplevel(self): # --- asigna valores a las variables de los campos (con valores de la fila seleccionada)
+		self.apellido.set(self.afiliado_target[0]) 
+		self.nombre.set(self.afiliado_target[1])
+		self.dni_afiliado.set(self.afiliado_target[2])
+		self.telefono.set(self.afiliado_target[3])
+		self.obrasocial.set(self.afiliado_target[4])
 
 	def limpiar_tabla(self):
 		self.tabla.delete(*self.tabla.get_children()) # --- elimina todos los elementos de la tabla
@@ -254,7 +282,11 @@ class App:
 
 	def get_datos_tabla(self): # --- devuelve valores de la fila seleccionada en la tabla (treeview)
 		focus_item = self.tabla.focus()
-		return self.tabla.item(focus_item)["values"]
+		datos_afil_target = self.tabla.item(focus_item)["values"]
+		datos_afil_string= ",".join(str(x) for x in datos_afil_target)
+		return datos_afil_string.split(",")
+
+
 
 	def get_new_afiliado(self):
 		self.new_afiliado = [
