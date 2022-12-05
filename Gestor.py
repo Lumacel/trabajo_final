@@ -10,11 +10,9 @@ class App:
 		self.new_afiliado=[]
 		self.afiliado_target = []
 		self.obras_sociales = []
-		self.vista_obra_social= ["TODAS"]
+		self.vista_obras_sociales= ["TODAS"]
 		self.current_obrasocial="TODAS"
 		
-		self.leer_obras_sociales()
-
 		self.leer_obras_sociales()
 
 		self.root = Tk()  
@@ -56,7 +54,7 @@ class App:
 		self.lbl_obra_social= Label(self.frame1,text="OBRA SOCIAL", relief= "ridge",width=14)
 		self.lbl_obra_social.place(x=294,y=10)
 
-		self.entry_obra_social = ttk.Combobox(self.frame1,values=self.vista_obra_social,state="readonly",width=12)
+		self.entry_obra_social = ttk.Combobox(self.frame1,values=self.vista_obras_sociales,state="readonly",width=12)
 		self.entry_obra_social.place(x=407,y=10)
 		self.entry_obra_social.current(0)
 
@@ -108,7 +106,7 @@ class App:
 		self.top_level = Toplevel()
 		self.top_level.resizable(0,0)
 		self.top_level.title("DATOS DEL AFILIADO")
-		self.top_level.geometry("370x250")
+		self.top_level.geometry("370x210")
 
 		self.apellido = StringVar()
 		self.nombre = StringVar() 
@@ -142,9 +140,10 @@ class App:
 		self.entry_obrasocial_toplevel.place(x=170,y=130)
 
 		self.btn_ingresar= Button(self.top_level,text="GRABAR DATOS",bd=3, width=15, command= self.grabar_afiliado)
-		self.btn_ingresar.place(x=10,y=215)
+		self.btn_ingresar.place(x=10,y=175)
+
 		self.btn_salir= Button(self.top_level,text="SALIR", bd=3, width=15, command= self.salir_top_level)
-		self.btn_salir.place(x=245,y=215)
+		self.btn_salir.place(x=245,y=175)
 		
 		self.entry_apellido.focus()
 
@@ -153,10 +152,12 @@ class App:
 	def leer_obras_sociales(self):
 		try:
 			with open("obras_sociales.csv", 'r', encoding='latin1') as ob_soc:
-				csvreader = csv.reader(ob_soc)
-				self.obras_sociales = next(csvreader) 
-				for i in range (len(self.obras_sociales)):
-					self.vista_obra_social.append(self.obras_sociales[i].upper())
+				csvreader = csv.reader(ob_soc) 
+				for linea in csvreader:
+					if linea == []:continue
+					self.obras_sociales.append(linea[0].upper())
+				for i in range(len(self.obras_sociales)):
+					self.vista_obras_sociales.append(self.obras_sociales[i])
 		except Exception as e:
 			messagebox.showerror(message=e, title="ERROR!!!")
 
@@ -213,7 +214,7 @@ class App:
 		if self.new_afiliado[0]=="" or self.new_afiliado[1]=="" or self.new_afiliado[2]=="" or self.new_afiliado[3]=="" or self.new_afiliado[4]=="":
 			messagebox.showinfo(message="TODOS LOS CAMPOS SON OBLIGATORIOS", title="INFO")
 			return False
-		# --- 
+		# --- valida campos numericos y alfabeticos
 		for i in range(2):
 			valores_campo.append(self.new_afiliado[i].isalpha())
 		for i in range(2,4):
