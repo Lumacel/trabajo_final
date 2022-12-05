@@ -12,6 +12,8 @@ class App:
 		self.obras_sociales = []
 		self.vista_obra_social= ["TODAS"]
 		self.current_obrasocial="TODAS"
+		
+		self.leer_obras_sociales()
 
 		self.leer_obras_sociales()
 
