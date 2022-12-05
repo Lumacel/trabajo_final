@@ -4,14 +4,16 @@ from tkinter import ttk
 import csv
 
 class App:
-	OBRAS_SOCIALES = ["IOMA", "OSPE"]
-	VISTA_OBRASOCIAL = ["TODAS", "IOMA", "OSPE"]
 
 	def __init__(self):
 		self.afiliados = []
 		self.new_afiliado=[]
 		self.afiliado_target = []
+		self.obras_sociales = []
+		self.vista_obra_social= ["TODAS"]
 		self.current_obrasocial="TODAS"
+
+		self.leer_obras_sociales()
 
 		self.root = Tk()  
 		self.root.title("GESTOR") 
@@ -52,7 +54,7 @@ class App:
 		self.lbl_obra_social= Label(self.frame1,text="OBRA SOCIAL", relief= "ridge",width=14)
 		self.lbl_obra_social.place(x=294,y=10)
 
-		self.entry_obra_social = ttk.Combobox(self.frame1,values=App.VISTA_OBRASOCIAL,state="readonly",width=12)
+		self.entry_obra_social = ttk.Combobox(self.frame1,values=self.vista_obra_social,state="readonly",width=12)
 		self.entry_obra_social.place(x=407,y=10)
 		self.entry_obra_social.current(0)
 
@@ -134,7 +136,7 @@ class App:
 
 		self.lbl_obra_social = Label(self.top_level, text = "OBRA SOCIAL", width=20, relief="ridge",)
 		self.lbl_obra_social.place(x=10,y=130)
-		self.entry_obrasocial_toplevel = ttk.Combobox(self.top_level,textvariable = self.obrasocial,values=App.OBRAS_SOCIALES,state="readonly",width=6)
+		self.entry_obrasocial_toplevel = ttk.Combobox(self.top_level,textvariable = self.obrasocial,values=self.obras_sociales,state="readonly",width=6)
 		self.entry_obrasocial_toplevel.place(x=170,y=130)
 
 		self.btn_ingresar= Button(self.top_level,text="GRABAR DATOS",bd=3, width=15, command= self.grabar_afiliado)
@@ -144,7 +146,18 @@ class App:
 		
 		self.entry_apellido.focus()
 
-		self.top_level.grab_set() # --- inhabilita ventana principal
+		self.top_level.grab_set() # --- inhabilita controles ventana principal
+
+	def leer_obras_sociales(self):
+		try:
+			with open("obras_sociales.csv", 'r', encoding='latin1') as ob_soc:
+				csvreader = csv.reader(ob_soc)
+				self.obras_sociales = next(csvreader) 
+				for i in range (len(self.obras_sociales)):
+					self.vista_obra_social.append(self.obras_sociales[i].upper())
+		except Exception as e:
+			messagebox.showerror(message=e, title="ERROR!!!")
+
 
 	def crear_lista_afiliados(self,archivo="afiliados.csv"): # --- levanta datos de archivo .csv (crea lista de lista de datos)		
 		try:
@@ -174,7 +187,7 @@ class App:
 	def modo_editar_afiliado(self): #--- permite editar valores de la fila seleccion
 		self.modo="EDITAR"  
 		self.afiliado_target = self.get_datos_tabla() 
-		if self.afiliado_target == "":
+		if self.afiliado_target == [""]:
 			messagebox.showinfo(message="POR FAVOR SELECCIONE ALGUN AFILIADO", title="EDITAR") # --- caja de mensaje
 		else:
 			self.abrir_ventana()
@@ -183,34 +196,43 @@ class App:
 	def modo_eliminar_afiliado(self):
 		self.modo="ELIMINAR"
 		self.afiliado_target = self.get_datos_tabla() 
-		if self.afiliado_target == "":
+		if self.afiliado_target == [""]:
 			messagebox.showinfo(message="POR FAVOR SELECCIONE ALGUN AFILIADO", title="ELIMINAR") # --- caja de mensaje
 		else:
-			if  messagebox.askyesno(message="¿DESEA CONTINUAR?", title=f"{(self.modo)} AFILIADO"): 
+			if  messagebox.askyesno(message="ESTA ACCIÓN NO PODRÁ DESHACERSE\n\n          ¿DESEA CONTINUAR?", title=f"{(self.modo)} AFILIADO"): 
 				self.eliminar_afiliado()
 				
-	def check_new_afiliado(self):
-		pass
-
-
-
-
-
-
-
-	
-
+	def validar_new_afiliado(self):
+		valores_campo =[]
+		self.new_afiliado = self.get_new_afiliado()
+		if self.afiliado_target == self.new_afiliado:
+			messagebox.showinfo(message="NO HA REALIZADO NINGUNA MODIFICACIÓN!!!", title="INFO")
+			return False
+		if self.new_afiliado[0]=="" or self.new_afiliado[1]=="" or self.new_afiliado[2]=="" or self.new_afiliado[3]=="" or self.new_afiliado[4]=="":
+			messagebox.showinfo(message="TODOS LOS CAMPOS SON OBLIGATORIOS", title="INFO")
+			return False
+		# --- 
+		for i in range(2):
+			valores_campo.append(self.new_afiliado[i].isalpha())
+		for i in range(2,4):
+			valores_campo.append(self.new_afiliado[i].isnumeric())	
+		if valores_campo != [True,True,True,True]:
+			messagebox.showinfo(message=" POR FAVOR RESPETE EL CARÁCTER ALFABÉTICO O NUMÉRICO \n\tDE LOS CAMPOS SEGÚN CORRESPONDA", title="INFO")
+			return False
+		return True
+		
 	def grabar_afiliado(self):
-		if  messagebox.askyesno(message="¿DESEA CONTINUAR?", title=f"{(self.modo).upper()} AFILIADO"): 
-			self.new_afiliado = self.get_new_afiliado()
-			self.check_new_afiliado()
-			if self.modo=="agregar":
+		self.new_afiliado = self.get_new_afiliado()
+		 
+		if self.validar_new_afiliado():  ########### si es verdadero
+			if self.modo=="AGREGAR":
 				self.agregar_afiliado()
-			else: # modo "editar"
-				self.agregar_afiliado()
-				self.eliminar_afiliado()
+			else: # modo "EDITAR"
+				if messagebox.askyesno(message="ESTA ACCIÓN MODIFICARÁ LOS DATOS DEL AFILIADO...  \n\n\t       ¿DESEA CONTINUAR?", title=f"{(self.modo).upper()} AFILIADO"):
+					self.agregar_afiliado()
+					self.eliminar_afiliado()
 			self.limpiar_tabla()
-
+		
 	def agregar_afiliado(self,archivo="afiliados.csv"):
 		try:
 			with open(archivo, 'a', newline='') as csvfile:  
@@ -283,10 +305,8 @@ class App:
 	def get_datos_tabla(self): # --- devuelve valores de la fila seleccionada en la tabla (treeview)
 		focus_item = self.tabla.focus()
 		datos_afil_target = self.tabla.item(focus_item)["values"]
-		datos_afil_string= ",".join(str(x) for x in datos_afil_target)
+		datos_afil_string= ",".join(str(elementos) for elementos in datos_afil_target)
 		return datos_afil_string.split(",")
-
-
 
 	def get_new_afiliado(self):
 		self.new_afiliado = [
