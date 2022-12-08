@@ -1,6 +1,8 @@
 from tkinter import *
-from tkinter import messagebox
-from tkinter import ttk
+from tkinter import ttk, messagebox
+from docx import Document
+from docx.shared import Pt, Cm
+from datetime import datetime 
 import csv
 
 class App:
@@ -62,6 +64,9 @@ class App:
 
 		self.btn_actualizar= Button(self.frame1,text="ACTUALIZAR TABLA",width=29, bd=3, command= self.actualizar_tabla)
 		self.btn_actualizar.place(x=294,y=80)
+
+		self.btn_crear_doc= Button(self.frame1,text="GENERAR DOCUMENTO",width=29, bd=3, command= self.generar_archivo)
+		self.btn_crear_doc.place(x=562,y=10)
 
 		self.crear_tabla()
 		self.inicializar_tabla()
@@ -148,7 +153,7 @@ class App:
 
 		self.top_level.grab_set() # --- inhabilita controles ventana principal
 
-	def cargar_obras_sociales(self,archivo = "obras_sociales.csv"): # --- levanta datos de obras sociales de archivo csv
+	def cargar_obras_sociales(self,archivo = "obras_sociales/obras_sociales.csv"): # --- levanta datos de obras sociales de archivo csv
 		try:
 			with open(archivo, 'r', encoding='latin1') as ob_soc:
 				csvreader = csv.reader(ob_soc) 
@@ -161,7 +166,7 @@ class App:
 		except Exception as e:
 			messagebox.showerror(message=e, title="ERROR!!!")
 
-	def crear_lista_afiliados(self,archivo="afiliados.csv"): # --- levanta datos de archivo .csv (crea lista de lista de datos)		
+	def crear_lista_afiliados(self,archivo="afiliados/afiliados.csv"): # --- levanta datos de archivo .csv (crea lista de lista de datos)		
 		try:
 			with open(archivo, 'r', encoding='latin1') as datos:
 				csvreader = csv.reader(datos)
@@ -248,7 +253,7 @@ class App:
 			self.top_level.destroy()
 			self.limpiar_tabla()
 	
-	def agregar_afiliado(self,archivo="afiliados.csv"):
+	def agregar_afiliado(self,archivo="afiliados/afiliados.csv"):
 		try:
 			with open(archivo, 'a', newline='') as csvfile:  
 				writer_object = csv.writer(csvfile)
@@ -257,7 +262,7 @@ class App:
 			messagebox.showerror(message=e, title="ERROR!!!")
 		self.salir_ventana()
 
-	def eliminar_afiliado(self,archivo="afiliados.csv"):
+	def eliminar_afiliado(self,archivo="afiliados/afiliados.csv"):
 		try:
 			with open(archivo, 'r', encoding='latin1') as datos:
 				nueva_lista_afiliados=[]
@@ -333,7 +338,42 @@ class App:
 
 	def info_num_afiliados(self):
 		self.text_info_frame1.set(f"NÚMERO DE AFILIADOS \t - {self.get_numero_afiliados()} -")
- 
+
+	def generar_archivo(self,ruta="archivos_gen"): # genera archivo para imprimir
+		doc = Document()
+		sections=doc.sections
+		for section in sections:
+			section.top_margin = Cm(1.5)
+			section.bottom_margin = Cm(1.5)
+			section.left_margin = Cm(2)
+			section.right_margin = Cm(2)
+
+		style = doc.styles['Normal']
+		style.paragraph_format.space_after = Pt(0) # Espacio entre lineas
+		font = style.font
+		font.name = 'Courier New'
+		font.size = Pt(9)
+		fecha = datetime.now()
+		doc.add_paragraph('     APELLIDO               NOMBRE                     DNI/AFILIADO       TELEFONO     O.S.\n')
+		c=0
+
+		if self.get_obrasocial() == "TODAS":
+			for i in self.get_afiliados_sort():
+				c+=1
+				linea = f"{str(c).rjust(3,' ')}- {i[0].ljust(22,' ')} {i[1].ljust(22,' ')}    {i[2].rjust(13,' ')}     {i[3].rjust(10,' ')}     {i[4].rjust(4,' ')}"
+				doc.add_paragraph(linea)
+		else:
+			for i in self.get_afiliados_sort():
+				if i[4] == self.get_obrasocial():
+					c+=1
+					linea = f"{str(c).rjust(3,' ')}- {i[0].ljust(22,' ')} {i[1].ljust(22,' ')}    {i[2].rjust(13,' ')}     {i[3].rjust(10,' ')}     {i[4].rjust(4,' ')}"
+					doc.add_paragraph(linea)
+
+		nombre_archivo = f'{fecha.strftime("%Y-%m-%d_%H-%M-%S")}_{self.get_obrasocial()}'
+		doc.save(f'{ruta}/{nombre_archivo}.docx')
+	    
+		messagebox.showinfo(message=f"\n     EL ARCHIVO FUE GENERADO CON ÉXITO: {ruta}/{nombre_archivo}.docx\n", title="INFO")
+	    
 def app():
 	v = App()
 	v.root.mainloop()
