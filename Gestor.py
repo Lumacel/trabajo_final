@@ -4,16 +4,15 @@ from tkinter import ttk
 import csv
 
 class App:
-
 	def __init__(self):
 		self.afiliados = []
-		self.new_afiliado=[]
+		self.nuevo_afiliado=[]
 		self.afiliado_target = []
 		self.obras_sociales = []
-		self.vista_obras_sociales= ["TODAS"]
+		self.vista_obras_sociales= []
 		self.current_obrasocial="TODAS"
 		
-		self.leer_obras_sociales()
+		self.cargar_obras_sociales()
 
 		self.root = Tk()  
 		self.root.title("GESTOR") 
@@ -82,7 +81,7 @@ class App:
 	
 		# --- barra scroll
 		self.scroll = Scrollbar(self.root, orient="vertical", command=self.tabla.yview)
-		self.scroll.place(x=860, y=10, height=210)
+		self.scroll.place(x=860, y=10, height=220)
 		self.tabla.configure(yscrollcommand=self.scroll.set)
 
 		# --- formato a las columnas
@@ -102,7 +101,7 @@ class App:
 		self.tabla.heading("#5", text="OBRA SOCIAL", anchor=CENTER)
 
 	def abrir_ventana(self,): # --- configura ventana para entrada de datos
-		self.new_afiliado=[]
+		self.nuevo_afiliado=[]
 		self.top_level = Toplevel()
 		self.top_level.resizable(0,0)
 		self.top_level.title("DATOS DEL AFILIADO")
@@ -142,25 +141,25 @@ class App:
 		self.btn_ingresar= Button(self.top_level,text="GRABAR DATOS",bd=3, width=15, command= self.grabar_afiliado)
 		self.btn_ingresar.place(x=10,y=175)
 
-		self.btn_salir= Button(self.top_level,text="SALIR", bd=3, width=15, command= self.salir_top_level)
+		self.btn_salir= Button(self.top_level,text="SALIR", bd=3, width=15, command= self.salir_ventana)
 		self.btn_salir.place(x=245,y=175)
 		
 		self.entry_apellido.focus()
 
 		self.top_level.grab_set() # --- inhabilita controles ventana principal
 
-	def leer_obras_sociales(self):
+	def cargar_obras_sociales(self,archivo = "obras_sociales.csv"): # --- levanta datos de obras sociales de archivo csv
 		try:
-			with open("obras_sociales.csv", 'r', encoding='latin1') as ob_soc:
+			with open(archivo, 'r', encoding='latin1') as ob_soc:
 				csvreader = csv.reader(ob_soc) 
 				for linea in csvreader:
 					if linea == []:continue
 					self.obras_sociales.append(linea[0].upper())
+				self.vista_obras_sociales.append("TODAS")
 				for i in range(len(self.obras_sociales)):
 					self.vista_obras_sociales.append(self.obras_sociales[i])
 		except Exception as e:
 			messagebox.showerror(message=e, title="ERROR!!!")
-
 
 	def crear_lista_afiliados(self,archivo="afiliados.csv"): # --- levanta datos de archivo .csv (crea lista de lista de datos)		
 		try:
@@ -194,56 +193,69 @@ class App:
 			messagebox.showinfo(message="POR FAVOR SELECCIONE ALGUN AFILIADO", title="EDITAR") # --- caja de mensaje
 		else:
 			self.abrir_ventana()
+			self.activar_btns_toplevel()
 			self.completar_campos_toplevel()
 
 	def modo_eliminar_afiliado(self):
 		self.modo="ELIMINAR"
 		self.afiliado_target = self.get_datos_tabla() 
 		if self.afiliado_target == [""]:
-			messagebox.showinfo(message="POR FAVOR SELECCIONE ALGUN AFILIADO", title="ELIMINAR") # --- caja de mensaje
+			messagebox.showinfo(message="POR FAVOR SELECCIONE ALGUN AFILIADO", title="ELIMINAR AFILIADO") # --- caja de mensaje
 		else:
-			if  messagebox.askyesno(message="ESTA ACCIÓN NO PODRÁ DESHACERSE\n\n          ¿DESEA CONTINUAR?", title=f"{(self.modo)} AFILIADO"): 
+			if  messagebox.askyesno(message="ESTA ACCIÓN NO PODRÁ DESHACERSE\n\n            ¿DESEA CONTINUAR?", title=f"{(self.modo)} AFILIADO"): 
 				self.eliminar_afiliado()
 				
-	def validar_new_afiliado(self):
-		valores_campo =[]
-		self.new_afiliado = self.get_new_afiliado()
-		if self.afiliado_target == self.new_afiliado:
+	def validar_nuevo_afiliado(self):
+		self.desactivar_btns_toplevel()
+		self.nuevo_afiliado = self.get_nuevo_afiliado()
+		if self.afiliado_target == self.nuevo_afiliado:
 			messagebox.showinfo(message="NO HA REALIZADO NINGUNA MODIFICACIÓN!!!", title="INFO")
+			self.activar_btns_toplevel()
 			return False
-		if self.new_afiliado[0]=="" or self.new_afiliado[1]=="" or self.new_afiliado[2]=="" or self.new_afiliado[3]=="" or self.new_afiliado[4]=="":
+		if self.nuevo_afiliado[0]=="" or self.nuevo_afiliado[1]=="" or self.nuevo_afiliado[2]=="" or self.nuevo_afiliado[3]=="" or self.nuevo_afiliado[4]=="":
 			messagebox.showinfo(message="TODOS LOS CAMPOS SON OBLIGATORIOS", title="INFO")
+			self.activar_btns_toplevel()
 			return False
 		# --- valida campos numericos y alfabeticos
-		for i in range(2):
-			valores_campo.append(self.new_afiliado[i].isalpha())
-		for i in range(2,4):
-			valores_campo.append(self.new_afiliado[i].isnumeric())	
+		valores_campo = [self.nuevo_afiliado[i].replace(" ","").isalpha() if i < 2 else self.nuevo_afiliado[i].replace(" ","").isnumeric() for i in range(4)]
 		if valores_campo != [True,True,True,True]:
 			messagebox.showinfo(message=" POR FAVOR RESPETE EL CARÁCTER ALFABÉTICO O NUMÉRICO \n\tDE LOS CAMPOS SEGÚN CORRESPONDA", title="INFO")
+			self.activar_btns_toplevel()
 			return False
+		self.activar_btns_toplevel()
 		return True
-		
+
+	def desactivar_btns_toplevel(self): # -- desactiva botones 
+		self.btn_salir.configure(state='disabled')
+		self.btn_ingresar.configure(state='disabled')
+
+	def activar_btns_toplevel(self):
+		self.btn_salir.configure(state='normal')
+		self.btn_ingresar.configure(state='normal')
+
 	def grabar_afiliado(self):
-		self.new_afiliado = self.get_new_afiliado()
-		 
-		if self.validar_new_afiliado():  ########### si es verdadero
+		self.nuevo_afiliado = self.get_nuevo_afiliado()
+		if self.validar_nuevo_afiliado():  ########### si es verdadero
+			self.desactivar_btns_toplevel()
+			self.btn_ingresar.forget()
 			if self.modo=="AGREGAR":
-				self.agregar_afiliado()
+				if messagebox.askyesno(message="ESTA ACCIÓN AGREGARÁ UN NUEVO AFILIADO...  \n\n\t   ¿DESEA CONTINUAR?", title=f"{(self.modo).upper()} AFILIADO"):
+					self.agregar_afiliado()
 			else: # modo "EDITAR"
 				if messagebox.askyesno(message="ESTA ACCIÓN MODIFICARÁ LOS DATOS DEL AFILIADO...  \n\n\t       ¿DESEA CONTINUAR?", title=f"{(self.modo).upper()} AFILIADO"):
 					self.agregar_afiliado()
 					self.eliminar_afiliado()
+			self.top_level.destroy()
 			self.limpiar_tabla()
-		
+	
 	def agregar_afiliado(self,archivo="afiliados.csv"):
 		try:
 			with open(archivo, 'a', newline='') as csvfile:  
 				writer_object = csv.writer(csvfile)
-				writer_object.writerow(self.new_afiliado)
+				writer_object.writerow(self.nuevo_afiliado)
 		except Exception as e:
 			messagebox.showerror(message=e, title="ERROR!!!")
-		self.salir_top_level()
+		self.salir_ventana()
 
 	def eliminar_afiliado(self,archivo="afiliados.csv"):
 		try:
@@ -255,7 +267,6 @@ class App:
 					nueva_lista_afiliados.append(linea)	
 		except Exception as e:
 			messagebox.showerror(message=e, title="ERROR!!!")
-
 		try:	
 			with open(archivo, 'w', encoding='latin1') as datos:
 			
@@ -265,7 +276,6 @@ class App:
 					csvwriter.writerow(linea)
 		except Exception as e:
 			messagebox.showerror(message=e, title="ERROR!!!")
-
 		self.limpiar_tabla()
 
 	def completar_campos_toplevel(self): # --- asigna valores a las variables de los campos (con valores de la fila seleccionada)
@@ -288,7 +298,7 @@ class App:
 	def ordenar_lista_afiliados(self):
 		self.afiliados_sort= sorted(self.afiliados)
 
-	def salir_top_level(self):
+	def salir_ventana(self):
 		self.top_level.destroy()
 		self.ordenar_lista_afiliados()
 		self.actualizar_tabla()
@@ -311,15 +321,15 @@ class App:
 		datos_afil_string= ",".join(str(elementos) for elementos in datos_afil_target)
 		return datos_afil_string.split(",")
 
-	def get_new_afiliado(self):
-		self.new_afiliado = [
+	def get_nuevo_afiliado(self):
+		self.nuevo_afiliado = [
 							self.apellido.get().upper(),
 							self.nombre.get().upper(),
 							self.dni_afiliado.get().upper(),
 							self.telefono.get().upper(),
 							self.obrasocial.get().upper()
 							]
-		return self.new_afiliado
+		return self.nuevo_afiliado
 
 	def info_num_afiliados(self):
 		self.text_info_frame1.set(f"NÚMERO DE AFILIADOS \t - {self.get_numero_afiliados()} -")
