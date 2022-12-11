@@ -14,12 +14,12 @@ class App:
 		self.vista_obras_sociales= []
 		self.current_obrasocial="TODAS"
 		
-		self.cargar_obras_sociales()
-
 		self.root = Tk()  
 		self.root.title("GESTOR") 
-		self.root.geometry("900x420+300+300")
 		self.root.resizable(0,0)
+		self.centrar_ventana()
+
+		self.cargar_obras_sociales()
 
 		# -- agrega estilo 
 		self.style = ttk.Style()
@@ -29,7 +29,7 @@ class App:
 		self.text_info = StringVar()
 		self.text_info_frame1= StringVar()
 
-		self.lbl_info = Label(self.root, textvariable = self.text_info , width=114, relief="ridge",bg="#c7e5f7",fg="blue", bd=4)
+		self.lbl_info = Label(self.root, textvariable = self.text_info , width=114, relief="ridge",bg="#e1f3fd",fg="blue", bd=4)
 		self.lbl_info.place(x=47,y=240)
 		
 		# -- Nueva ventana dentro de la raiz(root)
@@ -59,7 +59,7 @@ class App:
 		self.entry_obra_social.place(x=407,y=10)
 		self.entry_obra_social.current(0)
 
-		self.lbl_info_frame1 = Label(self.frame1,textvariable = self.text_info_frame1 , relief= "ridge",width=29, bg="#c7e5f7", fg="black")
+		self.lbl_info_frame1 = Label(self.frame1,textvariable = self.text_info_frame1 , relief= "ridge",width=29, bg="#e1f3fd", fg="black")
 		self.lbl_info_frame1.place(x=294,y=45)
 
 		self.btn_actualizar= Button(self.frame1,text="ACTUALIZAR TABLA",width=29, bd=3, command= self.actualizar_tabla)
@@ -70,7 +70,17 @@ class App:
 
 		self.crear_tabla()
 		self.inicializar_tabla()
-		
+
+	def centrar_ventana(self):
+		ancho_ventana = 900
+		alto_ventana = 420
+		ancho_pantalla= self.root.winfo_screenwidth()
+		alto_pantalla=self.root.winfo_screenheight()
+		x_ventana = ancho_pantalla // 2 - ancho_ventana // 2
+		y_ventana = alto_pantalla // 2 - alto_ventana // 2
+		posicion = str(ancho_ventana) + "x" + str(alto_ventana) + "+" + str(x_ventana) + "+" + str(y_ventana)
+		self.root.geometry(posicion)
+
 	def inicializar_tabla(self):
 		self.crear_lista_afiliados() 
 		self.ordenar_lista_afiliados()
@@ -82,7 +92,7 @@ class App:
 		self.tabla.pack(expand=False)
 		
 		# --- agrega color al heading
-		self.style.configure('Treeview.Heading', background="#c7e5f7")
+		self.style.configure('Treeview.Heading', background="#e1f3fd")
 	
 		# --- barra scroll
 		self.scroll = Scrollbar(self.root, orient="vertical", command=self.tabla.yview)
@@ -110,7 +120,7 @@ class App:
 		self.top_level = Toplevel()
 		self.top_level.resizable(0,0)
 		self.top_level.title("DATOS DEL AFILIADO")
-		self.top_level.geometry("370x210")
+		self.top_level.geometry("370x210+200+200")
 
 		self.apellido = StringVar()
 		self.nombre = StringVar() 
@@ -118,27 +128,27 @@ class App:
 		self.telefono = StringVar()
 		self.obrasocial= StringVar()
 		
-		self.lbl_apellido = Label(self.top_level, text = "APELLIDO", width=20, relief="ridge")
+		self.lbl_apellido = Label(self.top_level, text = "APELLIDO", width=20, relief="ridge", bg="#e1f3fd")
 		self.lbl_apellido.place(x=10,y=10)
 		self.entry_apellido = Entry(self.top_level,textvariable = self.apellido,width=30)
 		self.entry_apellido.place(x=170,y=10)
 
-		self.lbl_nombre = Label(self.top_level, text = "NOMBRE", width=20, relief="ridge")
+		self.lbl_nombre = Label(self.top_level, text = "NOMBRE", width=20, relief="ridge", bg="#e1f3fd")
 		self.lbl_nombre.place(x=10,y=40)
 		self.entry_nombre = Entry(self.top_level,textvariable = self.nombre,width=30)
 		self.entry_nombre.place(x=170,y=40) 
 
-		self.lbl_dni_afiliado = Label(self.top_level, text = "DNI/AFILIADO", width=20, relief="ridge")
+		self.lbl_dni_afiliado = Label(self.top_level, text = "DNI/AFILIADO", width=20, relief="ridge", bg="#e1f3fd")
 		self.lbl_dni_afiliado.place(x=10,y=70)
 		self.lbl_dni_afiliado= Entry(self.top_level,textvariable = self.dni_afiliado,width=30)
 		self.lbl_dni_afiliado.place(x=170,y=70)
 
-		self.lbl_telefono = Label(self.top_level, text = "TELEFONO", width=20, relief="ridge")
+		self.lbl_telefono = Label(self.top_level, text = "TELEFONO", width=20, relief="ridge", bg="#e1f3fd")
 		self.lbl_telefono.place(x=10,y=100)
 		self.entry_telefono = Entry(self.top_level,textvariable = self.telefono,width=30)
 		self.entry_telefono.place(x=170,y=100)
 
-		self.lbl_obra_social = Label(self.top_level, text = "OBRA SOCIAL", width=20, relief="ridge",)
+		self.lbl_obra_social = Label(self.top_level, text = "OBRA SOCIAL", width=20, relief="ridge", bg="#e1f3fd")
 		self.lbl_obra_social.place(x=10,y=130)
 		self.entry_obrasocial_toplevel = ttk.Combobox(self.top_level,textvariable = self.obrasocial,values=self.obras_sociales,state="readonly",width=6)
 		self.entry_obrasocial_toplevel.place(x=170,y=130)
@@ -242,7 +252,6 @@ class App:
 		self.nuevo_afiliado = self.get_nuevo_afiliado()
 		if self.validar_nuevo_afiliado():  ########### si es verdadero
 			self.desactivar_btns_toplevel()
-			self.btn_ingresar.forget()
 			if self.modo=="AGREGAR":
 				if messagebox.askyesno(message="ESTA ACCIÓN AGREGARÁ UN NUEVO AFILIADO...  \n\n\t   ¿DESEA CONTINUAR?", title=f"{(self.modo).upper()} AFILIADO"):
 					self.agregar_afiliado()
@@ -250,7 +259,7 @@ class App:
 				if messagebox.askyesno(message="ESTA ACCIÓN MODIFICARÁ LOS DATOS DEL AFILIADO...  \n\n\t       ¿DESEA CONTINUAR?", title=f"{(self.modo).upper()} AFILIADO"):
 					self.agregar_afiliado()
 					self.eliminar_afiliado()
-			self.top_level.destroy()
+			self.cerrar_toplevel()
 			self.limpiar_tabla()
 	
 	def agregar_afiliado(self,archivo="afiliados/afiliados.csv"):
@@ -274,7 +283,6 @@ class App:
 			messagebox.showerror(message=e, title="ERROR!!!")
 		try:	
 			with open(archivo, 'w', encoding='latin1') as datos:
-			
 				csvwriter = csv.writer(datos)
 				for linea in nueva_lista_afiliados:
 					if linea == self.afiliado_target: continue
@@ -291,23 +299,29 @@ class App:
 		self.obrasocial.set(self.afiliado_target[4])
 
 	def limpiar_tabla(self):
-		self.tabla.delete(*self.tabla.get_children()) # --- elimina todos los elementos de la tabla
-		self.afiliados=[] 
+		self.afiliados=[]
+		self.eliminar_elementos_tabla()
 		self.inicializar_tabla()
 
 	def actualizar_tabla(self):
-		self.tabla.delete(*self.tabla.get_children()) # --- elimina todos los elementos de la tabla
+		self.eliminar_elementos_tabla()
 		self.current_obrasocial = self.entry_obra_social.get() # --- toma valor asignado al campo obra social
 		self.cargar_tabla(self.get_afiliados_sort(),self.get_obrasocial()) # --- carga tabla con los nuevos valores
 		
+	def eliminar_elementos_tabla(self):
+		self.tabla.delete(*self.tabla.get_children()) # --- elimina todos los elementos de la tabla
+
 	def ordenar_lista_afiliados(self):
 		self.afiliados_sort= sorted(self.afiliados)
 
 	def salir_ventana(self):
-		self.top_level.destroy()
+		self.cerrar_toplevel()
 		self.ordenar_lista_afiliados()
 		self.actualizar_tabla()
-	
+
+	def cerrar_toplevel(self):
+		self.top_level.destroy()
+
 	def get_apellido(self):
 		return self.apellido.get()
 
@@ -317,7 +331,7 @@ class App:
 	def get_obrasocial(self):
 		return self.current_obrasocial 
 
-	def get_numero_afiliados(self):
+	def get_cantidad_afiliados(self):
 		return len(self.tabla.get_children())
 
 	def get_datos_tabla(self): # --- devuelve valores de la fila seleccionada en la tabla (treeview)
@@ -336,10 +350,11 @@ class App:
 							]
 		return self.nuevo_afiliado
 
-	def info_num_afiliados(self):
-		self.text_info_frame1.set(f"NÚMERO DE AFILIADOS \t - {self.get_numero_afiliados()} -")
+	def info_num_afiliados(self): # informa numero de afiliados en label de ventana principal
+		self.text_info_frame1.set(f"NÚMERO DE AFILIADOS \t - {self.get_cantidad_afiliados()} -")
 
 	def generar_archivo(self,ruta="archivos_gen"): # genera archivo para imprimir
+		c = 0
 		doc = Document()
 		sections=doc.sections
 		for section in sections:
@@ -347,28 +362,25 @@ class App:
 			section.bottom_margin = Cm(1.5)
 			section.left_margin = Cm(2)
 			section.right_margin = Cm(2)
-
 		style = doc.styles['Normal']
 		style.paragraph_format.space_after = Pt(0) # Espacio entre lineas
 		font = style.font
 		font.name = 'Courier New'
 		font.size = Pt(9)
-		fecha = datetime.now()
+		
 		doc.add_paragraph('     APELLIDO               NOMBRE                     DNI/AFILIADO       TELEFONO     O.S.\n')
-		c=0
-
-		if self.get_obrasocial() == "TODAS":
-			for i in self.get_afiliados_sort():
-				c+=1
-				linea = f"{str(c).rjust(3,' ')}- {i[0].ljust(22,' ')} {i[1].ljust(22,' ')}    {i[2].rjust(13,' ')}     {i[3].rjust(10,' ')}     {i[4].rjust(4,' ')}"
-				doc.add_paragraph(linea)
-		else:
-			for i in self.get_afiliados_sort():
-				if i[4] == self.get_obrasocial():
+		for i in self.get_afiliados_sort():
+			if self.get_obrasocial() != "TODAS":
+				if i[4] == self.get_obrasocial(): 
 					c+=1
 					linea = f"{str(c).rjust(3,' ')}- {i[0].ljust(22,' ')} {i[1].ljust(22,' ')}    {i[2].rjust(13,' ')}     {i[3].rjust(10,' ')}     {i[4].rjust(4,' ')}"
 					doc.add_paragraph(linea)
+			else: 
+				c+=1
+				linea = f"{str(c).rjust(3,' ')}- {i[0].ljust(22,' ')} {i[1].ljust(22,' ')}    {i[2].rjust(13,' ')}     {i[3].rjust(10,' ')}     {i[4].rjust(4,' ')}"
+				doc.add_paragraph(linea)
 
+		fecha = datetime.now()
 		nombre_archivo = f'{fecha.strftime("%Y-%m-%d_%H-%M-%S")}_{self.get_obrasocial()}'
 		doc.save(f'{ruta}/{nombre_archivo}.docx')
 	    
@@ -377,6 +389,6 @@ class App:
 def app():
 	v = App()
 	v.root.mainloop()
-	
+
 if __name__ == "__main__":
 	app()
