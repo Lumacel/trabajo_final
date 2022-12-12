@@ -1,9 +1,11 @@
 from tkinter import *
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox,filedialog
 from docx import Document
 from docx.shared import Pt, Cm
 from datetime import datetime 
 import csv
+import os
+
 
 class App:
 	def __init__(self):
@@ -65,8 +67,11 @@ class App:
 		self.btn_actualizar= Button(self.frame1,text="ACTUALIZAR TABLA",width=29, bd=3, command= self.actualizar_tabla)
 		self.btn_actualizar.place(x=294,y=80)
 
-		self.btn_crear_doc= Button(self.frame1,text="GENERAR DOCUMENTO",width=29, bd=3, command= self.generar_archivo)
+		self.btn_crear_doc= Button(self.frame1,text="GENERAR DOCUMENTO",width=29, bd=3, command= self.generar_documento)
 		self.btn_crear_doc.place(x=562,y=10)
+
+		self.btn_carpeta_doc= Button(self.frame1,text="EXAMINAR DOCUMENTOS",width=29, bd=3, command= self.abrir_carpeta)
+		self.btn_carpeta_doc.place(x=562,y=45)
 
 		self.crear_tabla()
 		self.inicializar_tabla()
@@ -353,39 +358,54 @@ class App:
 	def info_num_afiliados(self): # informa numero de afiliados en label de ventana principal
 		self.text_info_frame1.set(f"NÚMERO DE AFILIADOS \t - {self.get_cantidad_afiliados()} -")
 
-	def generar_archivo(self,ruta="archivos_gen"): # genera archivo para imprimir
-		c = 0
-		doc = Document()
-		sections=doc.sections
-		for section in sections:
-			section.top_margin = Cm(1.5)
-			section.bottom_margin = Cm(1.5)
-			section.left_margin = Cm(2)
-			section.right_margin = Cm(2)
-		style = doc.styles['Normal']
-		style.paragraph_format.space_after = Pt(0) # Espacio entre lineas
-		font = style.font
-		font.name = 'Courier New'
-		font.size = Pt(9)
-		
-		doc.add_paragraph('     APELLIDO               NOMBRE                     DNI/AFILIADO       TELEFONO     O.S.\n')
-		for i in self.get_afiliados_sort():
-			if self.get_obrasocial() != "TODAS":
-				if i[4] == self.get_obrasocial(): 
-					c+=1
-					linea = f"{str(c).rjust(3,' ')}- {i[0].ljust(22,' ')} {i[1].ljust(22,' ')}    {i[2].rjust(13,' ')}     {i[3].rjust(10,' ')}     {i[4].rjust(4,' ')}"
-					doc.add_paragraph(linea)
-			else: 
-				c+=1
-				linea = f"{str(c).rjust(3,' ')}- {i[0].ljust(22,' ')} {i[1].ljust(22,' ')}    {i[2].rjust(13,' ')}     {i[3].rjust(10,' ')}     {i[4].rjust(4,' ')}"
-				doc.add_paragraph(linea)
+	def generar_documento(self,ruta="archivos_gen"): # genera archivo para imprimir
+		if messagebox.askyesno(message="¿DESEA GENERAR UN DOCUMENTO CON ESTOS DATOS?", title=f"GENERAR DOCUMENTO"):
+			c = 0
+			doc = Document()
+			sections=doc.sections
+			for section in sections:
+				section.top_margin = Cm(1.5)
+				section.bottom_margin = Cm(1.5)
+				section.left_margin = Cm(2)
+				section.right_margin = Cm(2)
+			style = doc.styles['Normal']
+			style.paragraph_format.space_after = Pt(0) # Espacio entre lineas
+			font = style.font
+			font.name = 'Courier New'
+			font.size = Pt(9)
 
-		fecha = datetime.now()
-		nombre_archivo = f'{fecha.strftime("%Y-%m-%d_%H-%M-%S")}_{self.get_obrasocial()}'
-		doc.save(f'{ruta}/{nombre_archivo}.docx')
-	    
-		messagebox.showinfo(message=f"\n     EL ARCHIVO FUE GENERADO CON ÉXITO: {ruta}/{nombre_archivo}.docx\n", title="INFO")
-	    
+			doc.add_paragraph('     APELLIDO               NOMBRE                     DNI/AFILIADO       TELEFONO     O.S.\n')
+			for i in self.get_afiliados_sort():
+				if self.get_obrasocial() != "TODAS":
+					if i[4] == self.get_obrasocial(): 
+						c+=1
+						linea = f"{str(c).rjust(3,' ')}- {i[0][:22].ljust(22,' ')} {i[1][:22].ljust(22,' ')}    {i[2][:13].rjust(13,' ')}     {i[3][:10].rjust(10,' ')}     {i[4][:4].rjust(4,' ')}"
+						doc.add_paragraph(linea)
+				else: 
+					c+=1
+					linea = f"{str(c).rjust(3,' ')}- {i[0][:22].ljust(22,' ')} {i[1][:22].ljust(22,' ')}    {i[2][:13].rjust(13,' ')}     {i[3][:10].rjust(10,' ')}     {i[4][:4].rjust(4,' ')}"
+					doc.add_paragraph(linea)
+
+			fecha = datetime.now()
+			nombre_archivo = f'{fecha.strftime("%Y-%m-%d_%H-%M-%S")}_{self.get_obrasocial()}'
+
+			try:
+				doc.save(f'{ruta}/{nombre_archivo}.docx')
+				messagebox.showinfo(message=f"\n     EL ARCHIVO FUE GENERADO CON ÉXITO: {ruta}/{nombre_archivo}.docx\n", title="INFO")
+
+			except Exception as e:
+				messagebox.showerror(message=e, title="ERROR!!!")
+
+	def abrir_carpeta(self):
+		ruta = os.getcwd() + "\\archivos_gen"
+		print(ruta)
+		archivo = filedialog.askopenfilename(title="DOCUMENTOS",initialdir=ruta, filetypes= [("Archivos word","*.docx")])
+		print(archivo)
+		try:
+			os.system(archivo)
+		except Exception as e:
+			messagebox.showerror(message=e, title="ERROR!!!")
+
 def app():
 	v = App()
 	v.root.mainloop()
