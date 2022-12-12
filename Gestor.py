@@ -398,9 +398,7 @@ class App:
 
 	def abrir_carpeta(self):
 		ruta = os.getcwd() + "\\archivos_gen"
-		print(ruta)
 		archivo = filedialog.askopenfilename(title="DOCUMENTOS",initialdir=ruta, filetypes= [("Archivos word","*.docx")])
-		print(archivo)
 		try:
 			os.system(archivo)
 		except Exception as e:
