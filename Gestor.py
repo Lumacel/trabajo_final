@@ -259,9 +259,11 @@ class App:
 			self.desactivar_btns_toplevel()
 			if self.modo=="AGREGAR":
 				if messagebox.askyesno(message="ESTA ACCIÓN AGREGARÁ UN NUEVO AFILIADO...  \n\n\t   ¿DESEA CONTINUAR?", title=f"{(self.modo).upper()} AFILIADO"):
+					messagebox.showinfo(message=" EL AFILIADO HA SIDO AGREGADO CON ÉXITO", title="INFO")
 					self.agregar_afiliado()
 			else: # modo "EDITAR"
 				if messagebox.askyesno(message="ESTA ACCIÓN MODIFICARÁ LOS DATOS DEL AFILIADO...  \n\n\t       ¿DESEA CONTINUAR?", title=f"{(self.modo).upper()} AFILIADO"):
+					messagebox.showinfo(message=" EL AFILIADO HA SIDO AGREGADO CON ÉXITO", title="INFO")
 					self.agregar_afiliado()
 					self.eliminar_afiliado()
 			self.cerrar_toplevel()
@@ -292,6 +294,7 @@ class App:
 				for linea in nueva_lista_afiliados:
 					if linea == self.afiliado_target: continue
 					csvwriter.writerow(linea)
+			messagebox.showinfo(message=" EL AFILIADO HA SIDO ELIMINADO CON ÉXITO", title="INFO")
 		except Exception as e:
 			messagebox.showerror(message=e, title="ERROR!!!")
 		self.limpiar_tabla()
