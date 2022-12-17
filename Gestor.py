@@ -6,7 +6,6 @@ from datetime import datetime
 import csv
 import os
 
-
 class App:
 	def __init__(self):
 		self.afiliados = []
@@ -70,7 +69,7 @@ class App:
 		self.btn_crear_doc= Button(self.frame1,text="GENERAR DOCUMENTO",width=29, bd=3, command= self.generar_documento)
 		self.btn_crear_doc.place(x=562,y=10)
 
-		self.btn_carpeta_doc= Button(self.frame1,text="EXAMINAR DOCUMENTOS",width=29, bd=3, command= self.abrir_carpeta)
+		self.btn_carpeta_doc= Button(self.frame1,text="EXAMINAR DOCUMENTOS",width=29, bd=3, command= self.abrir_carpeta_docs)
 		self.btn_carpeta_doc.place(x=562,y=45)
 
 		self.crear_tabla()
@@ -259,13 +258,13 @@ class App:
 			self.desactivar_btns_toplevel()
 			if self.modo=="AGREGAR":
 				if messagebox.askyesno(message="ESTA ACCIÓN AGREGARÁ UN NUEVO AFILIADO...  \n\n\t   ¿DESEA CONTINUAR?", title=f"{(self.modo).upper()} AFILIADO"):
-					messagebox.showinfo(message=" EL AFILIADO HA SIDO AGREGADO CON ÉXITO", title="INFO")
+					messagebox.showinfo(message="EL AFILIADO HA SIDO AGREGADO CON ÉXITO", title="INFO")
 					self.agregar_afiliado()
 			else: # modo "EDITAR"
 				if messagebox.askyesno(message="ESTA ACCIÓN MODIFICARÁ LOS DATOS DEL AFILIADO...  \n\n\t       ¿DESEA CONTINUAR?", title=f"{(self.modo).upper()} AFILIADO"):
-					messagebox.showinfo(message=" EL AFILIADO HA SIDO AGREGADO CON ÉXITO", title="INFO")
 					self.agregar_afiliado()
 					self.eliminar_afiliado()
+					messagebox.showinfo(message="LOS DATOS HAN SIDO MODIFICADOS CON ÉXITO", title="INFO")
 			self.cerrar_toplevel()
 			self.limpiar_tabla()
 	
@@ -294,7 +293,8 @@ class App:
 				for linea in nueva_lista_afiliados:
 					if linea == self.afiliado_target: continue
 					csvwriter.writerow(linea)
-			messagebox.showinfo(message=" EL AFILIADO HA SIDO ELIMINADO CON ÉXITO", title="INFO")
+			if self.modo == "ELIMINAR":
+				messagebox.showinfo(message="EL AFILIADO HA SIDO ELIMINADO CON ÉXITO", title="INFO")
 		except Exception as e:
 			messagebox.showerror(message=e, title="ERROR!!!")
 		self.limpiar_tabla()
@@ -329,9 +329,6 @@ class App:
 
 	def cerrar_toplevel(self):
 		self.top_level.destroy()
-
-	def get_apellido(self):
-		return self.apellido.get()
 
 	def get_afiliados_sort(self):
 		return self.afiliados_sort
@@ -399,7 +396,7 @@ class App:
 			except Exception as e:
 				messagebox.showerror(message=e, title="ERROR!!!")
 
-	def abrir_carpeta(self):
+	def abrir_carpeta_docs(self):
 		ruta = os.getcwd() + "\\archivos_gen"
 		archivo = filedialog.askopenfilename(title="DOCUMENTOS",initialdir=ruta, filetypes= [("Archivos word","*.docx")])
 		try:
