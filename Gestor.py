@@ -72,6 +72,8 @@ class App:
 		self.btn_carpeta_doc= Button(self.frame1,text="EXAMINAR DOCUMENTOS",width=29, bd=3, command= self.abrir_carpeta_docs)
 		self.btn_carpeta_doc.place(x=562,y=45)
 
+		self.root.bind("<<ComboboxSelected>>", lambda x : self.actualizar_tabla() )
+
 		self.crear_tabla()
 		self.inicializar_tabla()
 
@@ -119,7 +121,7 @@ class App:
 		self.tabla.heading("#4", text="TELEFONO", anchor=CENTER)
 		self.tabla.heading("#5", text="OBRA SOCIAL", anchor=CENTER)
 
-	def abrir_ventana(self,): # --- configura ventana para entrada de datos
+	def abrir_ventana(self): # --- configura ventana para entrada de datos
 		self.nuevo_afiliado=[]
 		self.top_level = Toplevel()
 		self.top_level.resizable(0,0)
