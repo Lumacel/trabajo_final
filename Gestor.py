@@ -63,8 +63,8 @@ class App:
 		self.lbl_info_frame1 = Label(self.frame1,textvariable = self.text_info_frame1 , relief= "ridge",width=29, bg="#e1f3fd", fg="black")
 		self.lbl_info_frame1.place(x=294,y=45)
 
-		self.btn_actualizar= Button(self.frame1,text="ACTUALIZAR TABLA",width=29, bd=3, command= self.actualizar_tabla)
-		self.btn_actualizar.place(x=294,y=80)
+		#self.btn_actualizar= Button(self.frame1,text="ACTUALIZAR TABLA",width=29, bd=3, command= self.actualizar_tabla)
+		#self.btn_actualizar.place(x=294,y=80)
 
 		self.btn_crear_doc= Button(self.frame1,text="GENERAR DOCUMENTO",width=29, bd=3, command= self.generar_documento)
 		self.btn_crear_doc.place(x=562,y=10)
